@@ -6,12 +6,12 @@
 // Circuit constants
 const int ADC_PIN = A0;
 const float V_REF = 5.0;              // Arduino reference voltage (V)
-const float FIXED_RESISTOR = 150000;  // 150 kOhm fixed resistor (Ohms)
+const float FIXED_RESISTOR = 100000;  // 100 kOhm fixed resistor (Ohms)
 
 // Thermistor beta model constants
-const float R0 = 150000;              // Thermistor resistance at T0 (100 kOhm at 25C)
+const float R0 = 100000;              // Thermistor resistance at T0 (100 kOhm at 25C)
 const float T0 = 298.15;              // Reference temperature (25C in Kelvin)
-const float BETA = 4019;              // Beta value (check datasheet: B57861S0104F040V24)
+const float BETA = 4540;              // Beta value (check datasheet: B57861S0104F040V24)
 
 // Measurement constants
 const int NUM_SAMPLES = 100;           // Number of ADC samples per measurement
