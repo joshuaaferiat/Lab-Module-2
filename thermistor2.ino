@@ -1,100 +1,111 @@
-/*
-  FULL INTEGRATED SKETCH: Part 3C + Part 3D
-  
-  - setup() runs once: Measures time for 1000 analogRead() conversions (3D)
-  - loop() runs forever: Prints 100 averaged + 100 single readings (3C)
-  
-  Part 3C format: Ave1000_Point_1 Voltage_V:2.4561
-                  Ave1_Point_1 Voltage_V:2.4570
-*/
+// ============================================================================
+// Module 2: Serial Plotter Output
+// Part 2: Plot thermistor temperature versus serial read order
+// ============================================================================
 
+// Circuit constants
+const int ADC_PIN = A0;
+const float V_REF = 5.0;
+const float FIXED_RESISTOR = 100000.0;  // 100 kOhm
+
+// Thermistor beta model constants
+const float R0 = 100000.0;   // 100 kOhm at 25 C
+const float T0 = 298.15;      // 25 C in Kelvin
+const float BETA = 4540.0;    // Datasheet value
+
+// Measurement constants
+const int NUM_SAMPLES = 100;
+const unsigned long REPORT_INTERVAL = 1000;
+
+// Timing
+unsigned long lastReportTime = 0;
+
+
+// ============================================================================
+// averageAdcSamples()
+// ============================================================================
+float averageAdcSamples() {
+  long sum = 0;
+
+  for (int i = 0; i < NUM_SAMPLES; i++) {
+    sum += analogRead(ADC_PIN);
+  }
+
+  return sum / (float)NUM_SAMPLES;
+}
+
+
+// ============================================================================
+// adcToVoltage()
+// ============================================================================
+float adcToVoltage(float avgAdc) {
+  return (avgAdc / 1023.0) * V_REF;
+}
+
+
+// ============================================================================
+// voltageToResistance()
+// ============================================================================
+float voltageToResistance(float voltage) {
+  if (voltage >= V_REF || voltage <= 0) {
+    return 0;
+  }
+
+  return FIXED_RESISTOR * voltage / (V_REF - voltage);
+}
+
+
+// ============================================================================
+// resistanceToCelsius()
+// ============================================================================
+float resistanceToCelsius(float resistance) {
+  if (resistance <= 0) {
+    return 0;
+  }
+
+  float invT =
+      (1.0 / T0)
+      + (1.0 / BETA) * log(resistance / R0);
+
+  float tempKelvin = 1.0 / invT;
+
+  return tempKelvin - 273.15;
+}
+
+
+// ============================================================================
+// setup()
+// ============================================================================
 void setup() {
   Serial.begin(9600);
-  
-  // ================================================================
-  // PART 3D: MEASURE THE TIME COST OF AVERAGING (RUNS ONCE)
-  // ================================================================
-  Serial.println("=== Part 3D: Time Cost of Averaging ===");
-  
-  unsigned long startTime = micros();   // Start timer
-  
-  for (int i = 0; i < 1000; i++) {
-    analogRead(A0);                     // Just read, ignore the value
-  }
-  
-  unsigned long endTime = micros();     // Stop timer
-  unsigned long elapsedMicros = endTime - startTime;
-  
-  // Print results to Serial Monitor (only once)
-  Serial.print("Time for 1000 analogRead() conversions: ");
-  Serial.print(elapsedMicros);
-  Serial.println(" microseconds");
-  
-  float elapsedMillis = elapsedMicros / 1000.0;
-  Serial.print("That is ");
-  Serial.print(elapsedMillis, 2);
-  Serial.println(" milliseconds");
-  
-  float conversionRate = (1000.0 * 1000000.0) / elapsedMicros;
-  Serial.print("Conversion rate: ");
-  Serial.print(conversionRate, 1);
-  Serial.println(" readings/second");
-  
-  float timePerReading = elapsedMicros / 1000.0;
-  Serial.print("Time per reading: ");
-  Serial.print(timePerReading, 1);
-  Serial.println(" microseconds");
-  
-  Serial.println("Arduino reference: ~100 microseconds per conversion");
-  Serial.println("=== End of Part 3D ===");
-  Serial.println();
-  Serial.println("=== Part 3C: Data Collection Starting ===");
-  Serial.println("(Averaged block = smooth, Single block = noisy)");
-  Serial.println();
+
+  lastReportTime = millis();
 }
 
-// ================================================================
-// PART 3C: COMPARE ONE READING WITH A 1000-READING AVERAGE
-// ================================================================
 
-// --- Reads a single ADC conversion and returns voltage ---
-float readVoltageSingle() {
-  int sensorValue = analogRead(A0);
-  // 10-bit ADC: 1024 levels, resolution = 5.00V / 1024 = 4.88mV
-  return sensorValue * (5.00 / 1024.0);
-}
-
-// --- Averages 'numReadings' ADC conversions and returns voltage ---
-float readVoltageAveraged(int numReadings) {
-  long sum = 0;  // long prevents overflow (1000 * 1023 = 1,023,000)
-  for (int i = 0; i < numReadings; i++) {
-    sum += analogRead(A0);
-  }
-  float avgADC = sum / (float)numReadings;
-  return avgADC * (5.00 / 1024.0);
-}
-
+// ============================================================================
+// loop()
+// ============================================================================
 void loop() {
+  unsigned long currentTime = millis();
 
-  // // ---- BLOCK 1: 100 readings, each averaging 1000 conversions ----
-  // for (int i = 1; i <= 100; i++) {
-  //   float voltage = readVoltageAveraged(1000);
-  //   Serial.print("Ave1000_Point_");
-  //   Serial.print(i);
-  //   Serial.print(" Voltage_V:");
-  //   Serial.println(voltage, 4);
-  //   delay(200);  // Slow enough to capture the transition in Serial Plotter
-  // }
+  if (currentTime - lastReportTime >= REPORT_INTERVAL) {
+    lastReportTime = currentTime;
 
-  // ---- BLOCK 2: 100 readings, each from a single conversion ----
-  for (int i = 1; i <= 100; i++) {
-    float voltage = readVoltageSingle();
-    Serial.print("Ave1_Point_");
-    Serial.print(i);
-    Serial.print(" Voltage_V:");
-    Serial.println(voltage, 4);
-    delay(200);
+    // Average raw ADC measurements first
+    float avgAdc = averageAdcSamples();
+
+    // Convert in required sequence
+    float voltage = adcToVoltage(avgAdc);
+
+    float resistance =
+        voltageToResistance(voltage);
+
+    float temperature =
+        resistanceToCelsius(resistance);
+
+    // IMPORTANT:
+    // Serial Plotter should receive only one temperature value per line
+    Serial.println(temperature, 2);
   }
-
-  // Repeats forever: Averaged → Single → Averaged → Single → ...
 }
