@@ -86,10 +86,3 @@ C2, demonstrated S6 on Wednesday 16 September.
 | One ADC count in temperature | ≈0.076 °C |
 | Serial Plotter warm/cool excursion | 22.0 → 30.5 → 22.6 °C (Figure 2) |
 
-## Outstanding
-
-A relabeled, properly documented oscilloscope trace for 3B (pins 9/10 and M+/M-, with settings
-recorded), and resolving with the instructor whether the H-bridge signal check needs to happen
-retroactively since the motor test (3C) was already run. See
-[`docs/reference/MISSING_ITEMS_M2.md`](docs/reference/MISSING_ITEMS_M2.md).
-
