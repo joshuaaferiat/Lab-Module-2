@@ -93,16 +93,3 @@ recorded), and resolving with the instructor whether the H-bridge signal check n
 retroactively since the motor test (3C) was already run. See
 [`docs/reference/MISSING_ITEMS_M2.md`](docs/reference/MISSING_ITEMS_M2.md).
 
-## Evidence note
-
-→ [`docs/module_notes/module_02_instrument_pieces.md`](docs/module_notes/module_02_instrument_pieces.md)
-— evidence for **C2**, demonstrated S6, Wednesday 16 September. One team member submits the
-Moodle receipt by 5:00 PM.
-
-## Looking ahead — Module 3
-
-`arduino/m03_manual_fixed_direction/` is a first draft of the next module's sketch (thermistor +
-trim-pot PWM combined, fixed H-bridge direction, TEC connected instead of disconnected). It has
-not been uploaded to a board or bench-tested, and it is **not part of the C2 evidence above** —
-it's here early only so it isn't lost. Don't cite it as demonstrated work until it actually has a
-data capture behind it, the same standard the rest of this repo holds to.
