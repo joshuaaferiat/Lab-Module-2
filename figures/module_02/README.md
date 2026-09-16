@@ -15,7 +15,11 @@ note, so captions and links stay stable.
 | `m02_fig02_plotter_warm_cool.png` | 2 | **DONE** — Serial Plotter, 22.0 → 30.5 → 22.6 °C warming and cooling |
 | `m02_fig03_hbridge_wiring_overhead.jpg` | 3 | **DONE** — board with the BTS7960 present, TEC disconnected. Hardware documentation only; the H-bridge was not exercised |
 | `m02_fig04_hbridge_wiring_closeup.jpg` | 4 | **DONE** — logic connections between Arduino and H-bridge, as found |
-| — | — | **MISSING:** oscilloscope traces for pins 9 and 10 in both directions, and for M+ / M- in both directions |
+| `m02_fig05_scope_trimpot_pwm.jpg` | 5 | **PARTIAL** — a scope capture exists, but channels aren't labeled and VOLTS/DIV, TIME/DIV aren't legible, so it doesn't fill the 3B table on its own; see note §3 |
+| — | — | **MISSING:** a labeled, settings-documented oscilloscope trace for pins 9 and 10 in both directions, and for M+ / M- in both directions |
+
+Figures 3 and 4 were each picked from a burst of near-identical shots at the bench; swap in a
+sharper frame from the same burst if one turns up.
 
 ## Outstanding, and how to shoot it
 

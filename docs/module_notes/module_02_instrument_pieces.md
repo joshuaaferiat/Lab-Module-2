@@ -10,8 +10,22 @@
 | **Repository URL** | `FILL IN` |
 | **Git checkpoint (GC) commit** | `FILL IN: full 40-character hash` |
 
-> **Status.** Parts 1 and 2 were completed in class. Part 3 was not started — the sketch is
-> written but has not been uploaded, and no oscilloscope or motor work was done.
+> **Status.** Parts 1 and 2 were completed in class; the fixed-resistor and β constants used in §1
+> are now settled — nominal resistor value and the datasheet's 4540 K β, both as reported by the
+> team (§1). Part 3A (trim-pot PWM and heat/cool direction) was uploaded and bench-tested — four
+> raw serial captures confirm it behaves as designed (§3). Part 3B (oscilloscope verification of
+> the command signals) still has only one usable-looking scope capture (Figure 5), and it doesn't
+> count as evidence — unlabeled channels, illegible VOLTS/DIV and TIME/DIV, and a trace shape that
+> doesn't look like a locked PWM signal (§3). The team reports a video exists covering pins 9/10 on
+> the scope; it is **not yet in this repository**, and this note cannot be updated to cite it until
+> it's actually added and reviewed frame-by-frame. Part 3C (motor direction and speed test) was run
+> at the bench and is recorded here from recollection, not a contemporaneous note or photo; the
+> team also reports the same video covers the motor test, which would upgrade this from
+> recollection to documented once it's added and reviewed. M+/M- have not been probed at all, on
+> the scope or otherwise — a video of the motor turning correctly is not evidence of what the
+> H-bridge's output pins were doing electrically, only of what the motor did (§3 explains why).
+> It also isn't established that the instructor's H-bridge signal check happened before the motor
+> test, as the safety boundary requires.
 >
 > **Safety.** The TEC was disconnected throughout, and actuator power was never applied. The
 > thermistor circuit ran on Arduino USB power only. For the Part 3 session: every oscilloscope
@@ -38,10 +52,10 @@ its resistance drops.
 | Constant | Value | Where from |
 |---|---|---|
 | `V_REF` | 5.00 V | nominal Arduino supply, not measured |
-| `FIXED_RESISTOR` | 100 000 Ω | measured value: `FILL IN` Ω |
+| `FIXED_RESISTOR` | 100 000 Ω | nominal/rated value printed on the resistor, per the team — not independently re-checked with a multimeter, so treat this as the component's rated value rather than a bench measurement |
 | `R0` | 100 000 Ω at 25 °C | thermistor datasheet |
 | `T0` | 298.15 K | 25 °C |
-| `BETA` | 4540 K | datasheet, B57861S0104F040V24 — **confirm which β this is** (β₂₅/₈₅ and β₂₅/₁₀₀ differ) |
+| `BETA` | 4540 K | datasheet, B57861S0104F040V24, referenced from 25 °C — confirmed by the team directly from the datasheet |
 | `NUM_SAMPLES` | 100 | within the required 100–1000 |
 
 ### Predicted divider voltages
@@ -131,16 +145,17 @@ the interval changed. Nothing in Figure 2 measures time.
 
 ---
 
-## 3. Trim pot → PWM → H-bridge — not performed
+## 3. Trim pot → PWM → H-bridge
 
-**Parts 1 and 2 were completed in class; Part 3 was not.** The sketch below is written and
-compiles, but it has never been uploaded to the board, no oscilloscope evidence was taken, and
-the motor was never run. Everything in this section is therefore a **prediction from the code
-and the datasheet**, not a measurement. The section is kept so the plan and the reasoning are
-on record before the bench work happens.
+**3A is done and bench-verified. 3B is partial. 3C was not performed.** Earlier drafts of this
+note said Part 3 had not started at all — that was true when they were written, but the sketch
+has since been uploaded and exercised at the bench, actuator power still off. This section now
+reports what the serial captures and the one scope photo actually show, and says plainly where
+the evidence still falls short of what 3B and 3C require.
 
 Sketch: [`m02_trimpot_pwm_hbridge`](../../arduino/m02_trimpot_pwm_hbridge/m02_trimpot_pwm_hbridge.ino)
-— written, compiles, **not yet uploaded**.
+— uploaded and run. Both fixes below (direction pull-up, inactive-side-first) were in place for
+every capture in this section.
 
 ### Signal path
 
@@ -153,6 +168,27 @@ Sketch: [`m02_trimpot_pwm_hbridge`](../../arduino/m02_trimpot_pwm_hbridge/m02_tr
 The direction input on pin 11 chooses *which* pin carries the PWM; the trim pot sets *how much*.
 The two commands are independent, which is exactly the structure the temperature controller
 needs later — a signed control effort split into magnitude and direction.
+
+**Why an H-bridge at all, rather than driving the motor straight from an Arduino pin.** Pins 9
+and 10 are logic outputs — 5 V, and only tens of mA before the pin itself is at risk. The motor
+(and later the TEC) needs the bench supply's higher voltage and far more current than that,
+which is exactly what the safety boundary's warning about pins 9/10 is protecting against: those
+pins are commands, not power. The BTS7960 is the component that bridges that gap — its `VCC`,
+`R_EN`, `L_EN` inputs take the Arduino's low-power 5 V logic, while its separate `B+`/`B-`
+terminals take the bench supply directly (per `hardware/README.md`; the team reports this supply
+outputs 12 V, though that figure isn't independently confirmed anywhere else in this repo — worth
+a five-second multimeter check before final submission). A few milliamps of logic current is
+enough to switch several amps of motor current.
+
+**How reversing direction actually works.** RPWM and LPWM don't drive the motor directly; each
+one switches whether `M+` or `M-` is connected to the bench supply's positive or negative rail
+inside the H-bridge. Commanding HEAT connects `M+` toward `B+` and `M-` toward `B-`, so current
+flows through the motor one way; commanding COOL swaps which output is switched to which rail,
+which is electrically the same thing as swapping the two wires on a motor's terminals by hand —
+reversing current through the windings reverses the torque, and the motor spins the other way.
+This is the "four switches" mechanism the assignment's Wikipedia H-bridge link describes; the
+BTS7960 just does it with transistors instead of a manual swap, and does it fast enough to be
+PWM'd.
 
 ### H-bridge signal table — predicted
 
@@ -184,59 +220,170 @@ together for one instruction. On a BTS7960 that is a momentary brake rather than
 shoot-through, but it is an unintended state and costs nothing to avoid: the inactive side is
 now written to 0 first.
 
+### 3A — bench verification from serial captures
+
+Four raw `Trim Pot ADC / PWM / Direction` captures, saved byte-for-byte from Serial Monitor. The
+team's own filenames (`3b`, `3B2`, `3C`, `3C3`) track the bench progression through this
+section and into the oscilloscope and motor sessions below, so the mapping is kept explicit
+here rather than flattened into an arbitrary order:
+
+- [`m02_trimpot_pwm_20260916_run1.txt`](../../data/module_02/m02_trimpot_pwm_20260916_run1.txt)
+  (team's `3b.rtf`) — 2037 lines, PWM commanded from 5 to 141; the first bring-up capture
+- [`m02_trimpot_pwm_20260916_run2.txt`](../../data/module_02/m02_trimpot_pwm_20260916_run2.txt)
+  (team's `3B2.rtf`) — 741 lines, full sweep, PWM commanded from 0 to 255, both directions
+- [`m02_trimpot_pwm_20260916_run3.txt`](../../data/module_02/m02_trimpot_pwm_20260916_run3.txt)
+  (team's `3C.rtf`) — 369 lines, PWM 0 to 255, **COOL direction only**
+- [`m02_trimpot_pwm_20260916_run4.txt`](../../data/module_02/m02_trimpot_pwm_20260916_run4.txt)
+  (team's `3C3.rtf`) — 10174 lines, full sweep, both directions; the longest capture
+
+All four end mid-line — a normal artefact of stopping Serial Monitor while it was still
+writing, not a parsing error. `run1` also opens with five bare numbers (`28.07`, `33.31`, …)
+left over from a `m02_thermistor_plotter` session that was still in the monitor's scrollback
+before the trim-pot sketch was reset; the H-bridge log begins at the `====` header a few lines
+down.
+
+**Magnitude tracks the trim pot correctly across the full range.** The commanded PWM reaches
+both extremes: `ADC = 0.0 → PWM = 0` and `ADC = 1023.0 → PWM = 255` both appear (runs 2, 3, and
+4), matching `mapAdcToPwm()`'s `×255/1023` scaling with no clipping or offset error observed.
+
+**Direction responds to pin 11 independently of the trim pot**, which is the behaviour the
+signal-path diagram above claims but a static code read can't confirm. `run2.txt` lines 397–400:
+
+```
+Trim Pot ADC = 1023.0 PWM = 255 Direction = HEAT (clockwise)
+Trim Pot ADC = 1023.0 PWM = 255 Direction = HEAT (clockwise)
+Trim Pot ADC = 1023.0 PWM = 255 Direction = COOL (counterclockwise)
+Trim Pot ADC = 1023.0 PWM = 255 Direction = COOL (counterclockwise)
+```
+
+The trim pot did not move — the ADC and PWM columns are identical across the flip — so this
+transition was pin 11 alone. There is no garbage line between HEAT and COOL, which is what the
+`INPUT_PULLUP` fix above is supposed to guarantee: a floating or bouncing input would show up
+here as a stray direction flicker, and none appears in any of the four captures.
+
+**What this does and doesn't prove.** These captures confirm the *logic* running on the Arduino
+— `averageTrimPotSamples()`, `mapAdcToPwm()`, and the direction read — behaves as designed. They
+say nothing about the electrical signal actually reaching the BTS7960, or about the H-bridge's
+response to it; that is what 3B below is for, and it is only partly done.
+
 ### Oscilloscope verification — 3B
 
 ![H-bridge wiring, overhead](../../figures/module_02/m02_fig03_hbridge_wiring_overhead.jpg)
 
 **Figure 3.** The board with the BTS7960 module present and the TEC disconnected. Hardware
-documentation only — the H-bridge was not exercised. _Confirm whether this wiring was made by
-the team or was already on the board, and caption it accordingly._
+documentation only — picked from a burst of similar shots; swap for a better one if available.
+_Confirm whether this wiring was made by the team or was already on the board, and caption it
+accordingly._
 
 ![H-bridge wiring, close](../../figures/module_02/m02_fig04_hbridge_wiring_closeup.jpg)
 
 **Figure 4.** The logic connections between the Arduino and the H-bridge module, as found.
 
-**Not measured — Part 3B was not performed.** No oscilloscope evidence was taken in Module 2 at
-all. The table below is what 3B requires; every row is outstanding.
+![Oscilloscope trace, trim-pot / H-bridge session](../../figures/module_02/m02_fig05_scope_trimpot_pwm.jpg)
+
+**Figure 5.** The BK Precision 2120B during the trim-pot bench session. Both channels show a
+row of short, evenly spaced dashes rather than a continuous PWM square wave.
+
+**Partial — not yet a complete 3B.** Figure 5 is the only oscilloscope evidence taken, and it
+falls short of what the table below needs in three ways: **(1)** neither channel is labeled, so
+it isn't recorded whether CH1/CH2 are on pins 9/10, on M+/M-, or one of each; **(2)** the
+VOLTS/DIV and TIME/DIV knob settings aren't legible in the photo, so no voltage, period, or
+frequency can be read off it — this is exactly the Module 1 mistake the other READMEs warn
+against; **(3)** a row of dashes is not the continuous 0–5 V square wave a ≈490 Hz PWM signal
+should produce at any sane timebase, so before this counts as evidence it needs a second look —
+possibilities include a very fast sweep sampling only the rising edges, a trigger that isn't
+locked, or a probe that isn't actually on a PWM node. Duty cycle, being a ratio, would survive
+unlabeled knobs; the other rows would not.
 
 | Check | Heat / clockwise | Cool / counterclockwise |
 |---|---|---|
-| Which pin is active | | |
-| Inactive side stays at 0 V? | | |
-| High / low voltage | | |
-| Period, frequency | | |
-| Measured duty vs commanded | | |
-| Scope ground on Arduino GND? | | |
+| Which pin is active | not recorded — repeat with each channel labeled | not recorded |
+| Inactive side stays at 0 V? | not recorded | not recorded |
+| High / low voltage | not recorded — VOLTS/DIV not legible in Figure 5 | not recorded |
+| Period, frequency | not recorded — TIME/DIV not legible in Figure 5 | not recorded |
+| Measured duty vs commanded | not recorded | not recorded |
+| Scope ground on Arduino GND? | assumed per `hardware/README.md` convention, not confirmed in the photo | same |
 
 Record the VOLTS/DIV and TIME/DIV for every trace — the analog 2120B puts nothing on screen to
 recover them from, which cost us a frequency reading in Module 1.
 
+**Update — a video exists, not yet in this repository.** The team reports a video capture of
+pins 9/10 on the oscilloscope from the same bench session. A video is a real step up from a
+single static photo — done right, it can show a continuous, locked trace and the VOLTS/DIV and
+TIME/DIV knobs together, in a way one still frame might miss. But it isn't yet in the repository
+for anyone (instructor included) to check, and this table stays as "not recorded" until the file
+is actually added under `figures/module_02/` (or a new `videos/module_02/` folder) and reviewed
+frame-by-frame for the same three things Figure 5 failed on: labeled channels, legible knob
+settings, and a trace shape consistent with a locked ≈490 Hz square wave. Add the file and this
+section gets rewritten from what it actually shows.
+
 ### H-bridge outputs M+ and M- — 3B
 
-**Not measured — Part 3B was not performed.** Both outputs, in both directions, with the probe ground on Arduino `GND`.
+**Comparison of the M+ and M- waveforms in both directions.** The requirement here is a short
+comparison, not a full duty-cycle table like pins 9/10 above — but it still means a probe
+actually on `M+`/`M-`, since the requirement itself asks where the ground clips were connected,
+and a clip only has a location if it was actually placed. That hasn't happened yet, so what
+follows is reasoned from the other evidence in this repo (the pins 9/10 logs, the motor's
+behavior in 3C, and the H-bridge mechanism above), **not read off a trace** — labeled as such,
+and it does not close this item out:
 
-| | Heat / clockwise | Cool / counterclockwise |
+| | M+ | M- |
 |---|---|---|
-| M+ waveform | | |
-| M- waveform | | |
-| Where the probe ground clip was connected | Arduino GND | Arduino GND |
+| Heat / clockwise | Active — toggling 0 V ↔ bench-supply voltage at the same ≈490 Hz rate as pin 9 (RPWM), duty ≈ commanded PWM/255 | Inactive — held near 0 V |
+| Cool / counterclockwise | Inactive — held near 0 V | Active — toggling 0 V ↔ bench-supply voltage at the same rate as pin 10 (LPWM) |
+| Ground clip location | Not yet answerable — no probe has been on `M+`/`M-` yet. Per hardware convention it must be Arduino `GND`, never `M+` or `M-` | same |
+
+Why this is expected rather than known: the active side should hand off from `M+` to `M-` (or
+back) exactly when direction reverses, mirroring the RPWM/LPWM hand-off already confirmed in the
+serial logs; the period should match pins 9/10, since direction doesn't change the PWM rate, only
+which output carries it; and the high level on the active trace should sit near the bench-supply
+voltage (team reports ≈12 V, not independently confirmed — see §3 above) rather than 5 V, since
+`M+`/`M-` are past the H-bridge's level shift and pins 9/10 are not. The motor running correctly
+in 3C is reassuring that the H-bridge is doing something right, but it's circumstantial, not a
+substitute — a marginal or partially failed output can still spin a lightly loaded motor, which
+is exactly the failure mode this comparison would catch and 3C alone would not.
 
 > **Never** clip a scope ground to `M+` or `M-`. Both are driven outputs; grounding either one
 > through the oscilloscope shorts that half-bridge and can destroy the module.
 
 ### Motor test — 3C
 
-**Not performed.** Actuator power was never applied. This requires the instructor to check the
-H-bridge signals first, which has also not happened.
+**Direction and a qualitative speed trend are confirmed by direct observation; nothing was
+photographed or written down at the bench, and M+/M- were not separately checked.** Two of the
+four serial captures above are the team's own `3C.rtf` and `3C3.rtf`, and the team confirms this
+is where the motor was actually connected and run, actuator power on. The observations below are
+recorded here from the team's recollection immediately after the session, not from a
+contemporaneous note or photo — worth saying explicitly, since "we watched it happen" and "we
+wrote down what we watched" are different strengths of evidence, and an oral examiner may ask
+which this is.
 
 | Observation | Heat command | Cool command |
 |---|---|---|
-| Direction of the tape flag | | |
-| Relative speed at low PWM | | |
-| Relative speed at high PWM | | |
-| What changes on M+ / M- | | |
+| Direction of the tape flag | Clockwise — matches the `Direction = HEAT (clockwise)` label in the logs | Counterclockwise — matches `Direction = COOL (counterclockwise)` |
+| Relative speed at low PWM | Barely turning — consistent with the logs, where the trim pot idled around PWM 15–20 for long stretches in both directions | (same trend, direction reversed) |
+| Relative speed at high PWM | Visibly faster as the trim pot was run up toward PWM 255 | (same trend, direction reversed) |
+| Speed vs. trim pot, generally | Monotonic — turning the trim pot further up consistently moved the motor faster, with no dead zones or reversals noticed across the range | (same trend, direction reversed) |
+| Switching direction (pin 11) | Fast — the motor's rotation changed direction promptly on the flip, no noticeable lag or hesitation | Same |
+| Running behavior | Stable at a given PWM/direction setting — no stalling, stuttering, or unexpected speed drift observed while holding the trim pot still | Same |
+| What changes on M+ / M- | Not observed during this run — see the separate M+/M- entry below | Not observed during this run |
 
-Expected: heat → clockwise, cool → counterclockwise.
+This matches the predicted heat → clockwise, cool → counterclockwise mapping, and it's a real,
+if informally recorded, end-to-end confirmation that the signal path in this section actually
+drives a motor the way the code says it should.
+
+**Update — a video exists, not yet in this repository.** The team reports the motor test was also
+captured on video (the same session as, and possibly the same file as, the pins-9/10 scope video
+above). Once that file is added to the repository and actually reviewed, the table above should
+be rewritten to cite specific timestamps in the footage rather than "recorded from recollection" —
+that's a meaningfully stronger form of evidence, since it lets anyone (instructor included) check
+the direction and speed claims directly instead of taking the team's word after the fact. Until
+the file is added, this section stays as recollection.
+
+**What's still missing:** anything on M+/M- specifically — the video shows the motor's behavior,
+not the H-bridge's output pins, so 3B's M+/M- table above stays open regardless — and the
+instructor's own check of the signals, which per the safety boundary is supposed to happen
+*before* the motor test — worth confirming with the instructor directly whether running the motor
+ahead of that check needs to be flagged at checkoff.
 
 ---
 
@@ -277,11 +424,18 @@ value for any single point and silently discards any text it cannot parse as a n
 ## Before submitting
 
 1. Both members' full names, date, repository URL and full commit hash
-2. Measured value of the fixed resistor (§1)
-3. Confirm which β the datasheet quotes (§1)
+2. ~~Measured value of the fixed resistor~~ **Done** — nominal/rated value, per the team (§1)
+3. ~~Confirm which β the datasheet quotes~~ **Done** — 4540 K per the datasheet, per the team (§1)
 4. Three human-readable serial lines pasted into §1
-5. **All of Part 3** — upload `m02_trimpot_pwm_hbridge`, verify the command signals on the
-   oscilloscope (3B), have the instructor check the wiring, then run the motor test (3C)
+5. **Add the pins-9/10 scope video** to the repository (`figures/module_02/` or a new
+   `videos/module_02/`) and rewrite the 3B table from what it actually shows — labeled channels,
+   legible VOLTS/DIV and TIME/DIV, and a trace consistent with a locked ≈490 Hz square wave
+6. **Add the motor-test video** (or confirm it's the same file as #5) and rewrite the 3C table
+   with a citation to specific timestamps, replacing "recorded from recollection"
+7. **Probe M+/M-** in both directions, on the scope, probe ground on Arduino `GND` — still fully
+   open; nothing so far (data, code, either photo, or the reported video) touches this
+8. Confirm with the instructor whether the motor test happening before their H-bridge signal
+   check (rather than after, as the safety boundary specifies) needs to be addressed at checkoff
 
 **One team member** submits the C2 Team Checkoff Moodle receipt by 5:00 PM. C2 is demonstrated
 during S6 on Wednesday 16 September.

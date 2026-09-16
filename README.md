@@ -8,10 +8,12 @@ Module 2 turns the Module 1 techniques — analog input, averaging, PWM — into
 instrument pieces: thermistor temperature measurement, Serial Plotter output, and trim-pot
 controlled PWM driving a BTS7960 H-bridge.
 
-> **Safety.** The TEC is disconnected for all of Module 2, and actuator power has never been
-> applied. It stays off until the H-bridge input signals have been checked on the oscilloscope. **Every scope probe ground clip
-> goes to Arduino `GND` — never to `M+` or `M-`.** Both are driven H-bridge outputs; grounding
-> either through the oscilloscope shorts that half-bridge.
+> **Safety.** The TEC is disconnected for all of Module 2. Actuator power was applied for the 3C
+> motor test — the safety boundary calls for the instructor to check the H-bridge signals on the
+> oscilloscope *before* that happens, and that check isn't established to have occurred here (see
+> `docs/reference/MISSING_ITEMS_M2.md`). Confirm with the instructor. **Every scope probe ground
+> clip goes to Arduino `GND` — never to `M+` or `M-`.** Both are driven H-bridge outputs;
+> grounding either through the oscilloscope shorts that half-bridge.
 
 ---
 
@@ -39,7 +41,8 @@ build actually on the board.
 |---|---|---|---|
 | [`m02_thermistor_serial`](arduino/m02_thermistor_serial/) | 1 | Averaged ADC → voltage → resistance → temperature, one labeled line per report | ☑ produced the §1 serial output |
 | [`m02_thermistor_plotter`](arduino/m02_thermistor_plotter/) | 2 | Same chain, prints only the temperature for Serial Plotter | ☑ produced Figure 2 |
-| [`m02_trimpot_pwm_hbridge`](arduino/m02_trimpot_pwm_hbridge/) | 3A | Trim pot → PWM, digital input selects heat/cool, drives RPWM/LPWM | ☐ **written, compiles, never uploaded** |
+| [`m02_trimpot_pwm_hbridge`](arduino/m02_trimpot_pwm_hbridge/) | 3A | Trim pot → PWM, digital input selects heat/cool, drives RPWM/LPWM | ☑ uploaded and bench-tested — see `data/module_02/m02_trimpot_pwm_*.txt`; oscilloscope (3B) and instructor sign-off still outstanding |
+| [`m03_manual_fixed_direction`](arduino/m03_manual_fixed_direction/) | Module 3, Part 2 | Thermistor + trim pot in one sketch: pin 9 fixed LOW, all PWM on pin 10, one combined temperature/time/PWM line | ☐ **written, not yet uploaded or bench-tested** — not part of C2; included here only because it was written alongside this repo |
 
 ## Measurement convention
 
@@ -67,11 +70,12 @@ average.
 |---|---|
 | 1 — thermistor serial data and conversion | **Done in class** |
 | 2 — Serial Plotter output | **Done in class** — Figure 2 |
-| 3A — trim pot PWM and direction code | Sketch written and reviewed; **not uploaded** |
-| 3B — oscilloscope verification of the command signals | **Not started** |
-| 3C — motor direction and speed test | **Not started** |
+| 3A — trim pot PWM and direction code | **Uploaded and bench-tested** — four serial captures in `data/module_02/` |
+| 3B — oscilloscope verification of the command signals | **Partial** — one scope capture (Figure 5) still doesn't count as evidence (unlabeled channels, illegible knobs, non-square trace); a video of pins 9/10 reportedly exists but isn't in this repository yet — M+/M- not attempted at all |
+| 3C — motor direction and speed test | **Run, and confirmed by direct observation** — clockwise/counterclockwise matched the commanded direction, and speed visibly rose toward PWM 255; recorded from recollection, not yet from the video the team reports also covers this test — see `docs/reference/MISSING_ITEMS_M2.md` |
 
-Part 3 is the whole remaining job for C2, demonstrated S6 on Wednesday 16 September.
+Finishing 3B, and confirming the instructor sign-off question raised above, is what's left for
+C2, demonstrated S6 on Wednesday 16 September.
 
 ## Results so far
 
@@ -84,8 +88,9 @@ Part 3 is the whole remaining job for C2, demonstrated S6 on Wednesday 16 Septem
 
 ## Outstanding
 
-Oscilloscope verification of the H-bridge inputs (3B), the M+/M- output comparison, and the
-motor direction and speed test (3C). See
+A relabeled, properly documented oscilloscope trace for 3B (pins 9/10 and M+/M-, with settings
+recorded), and resolving with the instructor whether the H-bridge signal check needs to happen
+retroactively since the motor test (3C) was already run. See
 [`docs/reference/MISSING_ITEMS_M2.md`](docs/reference/MISSING_ITEMS_M2.md).
 
 ## Evidence note
@@ -93,3 +98,11 @@ motor direction and speed test (3C). See
 → [`docs/module_notes/module_02_instrument_pieces.md`](docs/module_notes/module_02_instrument_pieces.md)
 — evidence for **C2**, demonstrated S6, Wednesday 16 September. One team member submits the
 Moodle receipt by 5:00 PM.
+
+## Looking ahead — Module 3
+
+`arduino/m03_manual_fixed_direction/` is a first draft of the next module's sketch (thermistor +
+trim-pot PWM combined, fixed H-bridge direction, TEC connected instead of disconnected). It has
+not been uploaded to a board or bench-tested, and it is **not part of the C2 evidence above** —
+it's here early only so it isn't lost. Don't cite it as demonstrated work until it actually has a
+data capture behind it, the same standard the rest of this repo holds to.
