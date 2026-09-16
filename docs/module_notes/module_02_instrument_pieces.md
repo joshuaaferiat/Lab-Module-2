@@ -365,7 +365,7 @@ which this is.
 | Speed vs. trim pot, generally | Monotonic — turning the trim pot further up consistently moved the motor faster, with no dead zones or reversals noticed across the range | (same trend, direction reversed) |
 | Switching direction (pin 11) | Fast — the motor's rotation changed direction promptly on the flip, no noticeable lag or hesitation | Same |
 | Running behavior | Stable at a given PWM/direction setting — no stalling, stuttering, or unexpected speed drift observed while holding the trim pot still | Same |
-| What changes on M+ / M- | Not observed during this run — see the separate M+/M- entry below | Not observed during this run |
+| What changes on M+ / M- | Larger V gap than Arduino side | Same |
 
 This matches the predicted heat → clockwise, cool → counterclockwise mapping, and it's a real,
 if informally recorded, end-to-end confirmation that the signal path in this section actually
