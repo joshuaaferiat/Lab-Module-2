@@ -5,10 +5,10 @@
 | | |
 |---|---|
 | **Evidence for** | C2, Measurement And Actuator Electronics — demonstrated S6, Wed 16 September |
-| **Team members** | `FILL IN: both members' full names` |
-| **Date of measurements** | `FILL IN` |
-| **Repository URL** | `FILL IN` |
-| **Git checkpoint (GC) commit** | `FILL IN: full 40-character hash` |
+| **Team members** | Tianren Yin, Joshua Aferiat |
+| **Date of measurements** | Sept 14 |
+| **Repository URL** | https://github.com/joshuaaferiat/Lab-Module-2/ |
+| **Git checkpoint (GC) commit** | e0259c50a14a4cadb7301fd0ab091a34a8e98176 |
 
 > **Status.** Parts 1 and 2 were completed in class; the fixed-resistor and β constants used in §1
 > are now settled — nominal resistor value and the datasheet's 4540 K β, both as reported by the
