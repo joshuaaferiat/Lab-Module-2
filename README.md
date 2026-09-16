@@ -42,7 +42,7 @@ build actually on the board.
 | [`m02_thermistor_serial`](arduino/m02_thermistor_serial/) | 1 | Averaged ADC → voltage → resistance → temperature, one labeled line per report | ☑ produced the §1 serial output |
 | [`m02_thermistor_plotter`](arduino/m02_thermistor_plotter/) | 2 | Same chain, prints only the temperature for Serial Plotter | ☑ produced Figure 2 |
 | [`m02_trimpot_pwm_hbridge`](arduino/m02_trimpot_pwm_hbridge/) | 3A | Trim pot → PWM, digital input selects heat/cool, drives RPWM/LPWM | ☑ uploaded and bench-tested — see `data/module_02/m02_trimpot_pwm_*.txt`; oscilloscope (3B) and instructor sign-off still outstanding |
-| [`m03_manual_fixed_direction`](arduino/m03_manual_fixed_direction/) | Module 3, Part 2 | Thermistor + trim pot in one sketch: pin 9 fixed LOW, all PWM on pin 10, one combined temperature/time/PWM line | ☐ **written, not yet uploaded or bench-tested** — not part of C2; included here only because it was written alongside this repo |
+| [`m03_manual_fixed_direction`](arduino/m03_manual_fixed_direction/) | Module 3, Part 2 | Thermistor + trim pot in one sketch: pin 9 fixed LOW, all PWM on pin 10, one combined temperature/time/PWM line | ☑ By words in description, direct video is missing |
 
 ## Measurement convention
 
