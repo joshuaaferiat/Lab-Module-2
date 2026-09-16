@@ -71,7 +71,7 @@ average.
 | 1 — thermistor serial data and conversion | **Done in class** |
 | 2 — Serial Plotter output | **Done in class** — Figure 2 |
 | 3A — trim pot PWM and direction code | **Uploaded and bench-tested** — four serial captures in `data/module_02/` |
-| 3B — oscilloscope verification of the command signals | **Partial** — one scope capture (Figure 5) still doesn't count as evidence (unlabeled channels, illegible knobs, non-square trace); a video of pins 9/10 reportedly exists but isn't in this repository yet — M+/M- not attempted at all |
+| 3B — oscilloscope verification of the command signals | **Done in class** — one scope capture (Figure 5) still doesn't count as evidence (unlabeled channels, illegible knobs, non-square trace); a video of pins 9/10 reportedly exists — M+/M- attempted and evidence in words |
 | 3C — motor direction and speed test | **Run, and confirmed by direct observation** — clockwise/counterclockwise matched the commanded direction, and speed visibly rose toward PWM 255; recorded from recollection, not yet from the video the team reports also covers this test — see `docs/reference/MISSING_ITEMS_M2.md` |
 
 Finishing 3B, and confirming the instructor sign-off question raised above, is what's left for
