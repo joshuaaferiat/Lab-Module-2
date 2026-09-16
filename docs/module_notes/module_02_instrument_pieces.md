@@ -8,7 +8,7 @@
 | **Team members** | Tianren Yin, Joshua Aferiat |
 | **Date of measurements** | Sept 14 |
 | **Repository URL** | https://github.com/joshuaaferiat/Lab-Module-2/ |
-| **Git checkpoint (GC) commit** | e0259c50a14a4cadb7301fd0ab091a34a8e98176 |
+| **Git checkpoint (GC) commit** | 5c4c86ad79999104c660f65fb1b1d99a78ffa0b9 |
 
 > **Status.** Parts 1 and 2 were completed in class; the fixed-resistor and β constants used in §1
 > are now settled — nominal resistor value and the datasheet's 4540 K β, both as reported by the
