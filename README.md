@@ -2,7 +2,7 @@
 
 **Course:** Phys 39 — Instrumentation and Thermal Physics
 **Team:** TEC 8
-**Repository:** `FILL IN`
+**Repository:** https://github.com/joshuaaferiat/Lab-Module-2
 
 Module 2 turns the Module 1 techniques — analog input, averaging, PWM — into the first real
 instrument pieces: thermistor temperature measurement, Serial Plotter output, and trim-pot
