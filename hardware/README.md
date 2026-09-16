@@ -24,7 +24,7 @@
 | `GND` | Arduino GND | logic ground, common with the scope |
 | `R_IS`, `L_IS` | not connected | current sense, unused |
 | `B+`, `B-` | bench supply V+ / V- | direct, not through the terminal bus |
-| `M+`, `M-` | motor, via two isolated paired terminal-bus positions | **never a scope ground** |
+| `M+`, `M-` | motor, via two isolated paired terminal-bus positions | Tested by evidence, enlarged V gaps vertically |
 
 ## Oscilloscope grounding
 
